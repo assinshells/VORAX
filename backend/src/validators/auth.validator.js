@@ -53,3 +53,4 @@ export const validateResetPasswordRequest = (body) => {
 
 export const validateVerifyEmailRequest = validateVerifyOtpRequest;
 export const validateResendVerificationRequest = validateForgotPasswordRequest;
+

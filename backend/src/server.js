@@ -4,6 +4,7 @@ import app from "./app.js";
 import logger from "./config/logger.js";
 import { env, assertRequiredEnv } from "./config/env.js";
 import { connectDatabase, pool } from "./config/database.js";
+import { migrate } from "./config/migrate.js";
 import { connectRedis, disconnectRedis } from "./config/redis.js";
 
 try {
@@ -62,6 +63,7 @@ process.on("uncaughtException", (err) => {
 const start = async () => {
   try {
     await connectDatabase();
+    await migrate();
     await connectRedis();
     httpServer.listen(PORT, () => {
       logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    avatar VARCHAR(32) NOT NULL DEFAULT 'default',
+    gender VARCHAR(16) NOT NULL DEFAULT 'unknown',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

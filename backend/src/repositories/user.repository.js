@@ -75,4 +75,20 @@ export const UserRepository = {
       id,
     ]);
   },
+
+  async findProfileById(id) {
+    const { rows } = await pool.query(
+      "SELECT id, login, email, avatar, gender FROM users WHERE id = $1",
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
+  async updateAvatar(id, avatar, gender) {
+    const { rows } = await pool.query(
+      "UPDATE users SET avatar = $1, gender = $2 WHERE id = $3 RETURNING id, login, email, avatar, gender",
+      [avatar, gender, id],
+    );
+    return rows[0] ?? null;
+  },
 };
