@@ -20,6 +20,12 @@ export class AuthorizationException extends BaseException {
   }
 }
 
+export class EmailNotVerifiedException extends BaseException {
+  constructor(message = AUTH_ERRORS.EMAIL_NOT_VERIFIED) {
+    super(message, HTTP_STATUS.FORBIDDEN, "EMAIL_NOT_VERIFIED");
+  }
+}
+
 export class NotFoundException extends BaseException {
   constructor(message = AUTH_ERRORS.USER_NOT_FOUND) {
     super(message, HTTP_STATUS.NOT_FOUND, "NOT_FOUND");

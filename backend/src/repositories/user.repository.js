@@ -3,7 +3,7 @@ import { pool } from "../config/database.js";
 export const UserRepository = {
   async findByLogin(login) {
     const { rows } = await pool.query(
-      "SELECT id, login, email, password_hash, gender FROM users WHERE login = $1",
+      "SELECT id, login, email, password_hash, email_verified FROM users WHERE login = $1",
       [login],
     );
     return rows[0] ?? null;
@@ -11,7 +11,7 @@ export const UserRepository = {
 
   async findByEmail(email) {
     const { rows } = await pool.query(
-      "SELECT id, login, email, password_hash, gender FROM users WHERE email = $1",
+      "SELECT id, login, email, password_hash, email_verified FROM users WHERE email = $1",
       [email],
     );
     return rows[0] ?? null;
@@ -19,13 +19,13 @@ export const UserRepository = {
 
   async findById(id) {
     const { rows } = await pool.query(
-      "SELECT id, login, email, password_hash, gender FROM users WHERE id = $1",
+      "SELECT id, login, email, password_hash, email_verified FROM users WHERE id = $1",
       [id],
     );
     return rows[0] ?? null;
   },
 
-  async create({ login, passwordHash, email, gender }) {
+  async create({ login, passwordHash, email }) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -39,20 +39,18 @@ export const UserRepository = {
         return null;
       }
 
-      if (email) {
-        const emailCheck = await client.query(
-          "SELECT id FROM users WHERE email = $1 FOR UPDATE",
-          [email],
-        );
-        if (emailCheck.rows.length > 0) {
-          await client.query("ROLLBACK");
-          return null;
-        }
+      const emailCheck = await client.query(
+        "SELECT id FROM users WHERE email = $1 FOR UPDATE",
+        [email],
+      );
+      if (emailCheck.rows.length > 0) {
+        await client.query("ROLLBACK");
+        return null;
       }
 
       const { rows } = await client.query(
-        "INSERT INTO users (login, password_hash, email, gender) VALUES ($1, $2, $3, $4) RETURNING id",
-        [login, passwordHash, email ?? null, gender],
+        "INSERT INTO users (login, password_hash, email) VALUES ($1, $2, $3) RETURNING id",
+        [login, passwordHash, email],
       );
 
       await client.query("COMMIT");
@@ -63,6 +61,12 @@ export const UserRepository = {
     } finally {
       client.release();
     }
+  },
+
+  async markEmailVerified(id) {
+    await pool.query("UPDATE users SET email_verified = TRUE WHERE id = $1", [
+      id,
+    ]);
   },
 
   async updatePassword(id, passwordHash) {

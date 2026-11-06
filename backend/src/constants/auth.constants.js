@@ -1,5 +1,6 @@
 export const AUTH_ERRORS = Object.freeze({
-  INVALID_CREDENTIALS: "Invalid login or password",
+  INVALID_CREDENTIALS: "Invalid email or password",
+  EMAIL_NOT_VERIFIED: "Email is not verified",
   LOGIN_TAKEN: "Login already taken",
   EMAIL_TAKEN: "Email already taken",
   USER_NOT_FOUND: "User not found",
@@ -24,21 +25,18 @@ export const COOKIE_NAMES = Object.freeze({
   csrfToken: "csrfToken",
 });
 
-// Gender is a required registration field with no default value —
-// the client must always send one of these explicit values.
-export const GENDER_VALUES = Object.freeze({
-  MALE: "male",
-  FEMALE: "female",
-  UNKNOWN: "unknown",
+// OTP назначения: коды разных флоу хранятся под разными ключами,
+// чтобы код активации не подходил для сброса пароля и наоборот.
+export const OTP_PURPOSES = Object.freeze({
+  ACTIVATION: "activation",
+  RESET: "reset",
 });
-
-export const GENDER_OPTIONS = Object.freeze(Object.values(GENDER_VALUES));
 
 export const REDIS_KEYS = Object.freeze({
   refreshToken: (jti) => `refresh_token:${jti}`,
-  otp: (uid) => `otp:${uid}`,
+  otp: (uid, purpose) => `otp:${purpose}:${uid}`,
   otpVerified: (tok) => `otp_verified:${tok}`,
-  otpAttempts: (uid) => `otp_attempts:${uid}`,
+  otpAttempts: (uid, purpose) => `otp_attempts:${purpose}:${uid}`,
 });
 
 export const HTTP_STATUS = Object.freeze({

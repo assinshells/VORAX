@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { AUTH_SCREENS, APP_NAME } from "@shared/constants/auth.constants.js";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
 import { Storage } from "@shared/lib/storage.js";
 import { refreshAccessToken } from "@shared/api/axios.js";
 
 import { LoginPage } from "@pages/LoginPage.jsx";
 import { RegisterPage } from "@pages/RegisterPage.jsx";
+import { VerifyEmailPage } from "@pages/VerifyEmailPage.jsx";
 import { ForgotPasswordPage } from "@pages/ForgotPasswordPage.jsx";
 import { VerifyOtpPage } from "@pages/VerifyOtpPage.jsx";
 import { ResetPasswordPage } from "@pages/ResetPasswordPage.jsx";
@@ -15,23 +17,23 @@ import "@app/styles/index.css";
 const USER_KEY = "userLogin";
 
 export default function App() {
-  // accessToken живёt только в памяти (AuthSession) и не переживает
+  // accessToken живёт только в памяти (AuthSession) и не переживает
   // перезагрузку страницы — поэтому при монтировании делаем "тихий"
   // refresh: если у браузера есть валидная httpOnly refreshToken-cookie,
   // сессия восстановится сама, без повторного логина.
   const [booting, setBooting] = useState(true);
-  const [screen, setScreen] = useState(AUTH_SCREENS.LOGIN);
-  const [screenParams, setScreenParams] = useState({});
+  const [authed, setAuthed] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
 
     refreshAccessToken()
       .then(() => {
-        if (!cancelled) setScreen(AUTH_SCREENS.APP);
+        if (!cancelled) setAuthed(true);
       })
       .catch(() => {
-        // Нет валидной cookie-сессии — остаёмся на экране логина.
+        // Нет валидной cookie-сессии — остаёмся неавторизованными.
       })
       .finally(() => {
         if (!cancelled) setBooting(false);
@@ -42,22 +44,17 @@ export default function App() {
     };
   }, []);
 
-  const navigate = (newScreen, params = {}) => {
-    setScreen(newScreen);
-    setScreenParams(params);
-  };
-
-  const handleLoginSuccess = (login) => {
-    Storage.set(USER_KEY, login);
-    navigate(AUTH_SCREENS.APP);
+  const handleAuthSuccess = (email) => {
+    Storage.set(USER_KEY, email);
+    setAuthed(true);
+    navigate(ROUTES.HOME, { replace: true });
   };
 
   const handleLogout = () => {
     Storage.remove(USER_KEY);
-    navigate(AUTH_SCREENS.LOGIN);
+    setAuthed(false);
+    navigate(ROUTES.LOGIN, { replace: true });
   };
-
-  const currentLogin = Storage.get(USER_KEY) ?? "anonymous";
 
   if (booting) {
     return (
@@ -70,32 +67,38 @@ export default function App() {
     );
   }
 
-  switch (screen) {
-    case AUTH_SCREENS.REGISTER:
-      return <RegisterPage onNavigate={navigate} />;
+  // Гостевые страницы недоступны авторизованному пользователю и наоборот.
+  const guest = (element) =>
+    authed ? <Navigate to={ROUTES.HOME} replace /> : element;
 
-    case AUTH_SCREENS.FORGOT:
-      return <ForgotPasswordPage onNavigate={navigate} />;
-
-    case AUTH_SCREENS.OTP:
-      return (
-        <VerifyOtpPage onNavigate={navigate} email={screenParams.email ?? ""} />
-      );
-
-    case AUTH_SCREENS.RESET:
-      return (
-        <ResetPasswordPage
-          onNavigate={navigate}
-          verifiedToken={screenParams.verifiedToken}
-        />
-      );
-
-    case AUTH_SCREENS.APP:
-      return <HomePage login={currentLogin} onLogout={handleLogout} />;
-
-    default:
-      return (
-        <LoginPage onNavigate={navigate} onLoginSuccess={handleLoginSuccess} />
-      );
-  }
+  return (
+    <Routes>
+      <Route
+        path={ROUTES.HOME}
+        element={
+          authed ? (
+            <HomePage
+              login={Storage.get(USER_KEY) ?? "anonymous"}
+              onLogout={handleLogout}
+            />
+          ) : (
+            <Navigate to={ROUTES.LOGIN} replace />
+          )
+        }
+      />
+      <Route
+        path={ROUTES.LOGIN}
+        element={guest(<LoginPage onLoginSuccess={handleAuthSuccess} />)}
+      />
+      <Route path={ROUTES.REGISTER} element={guest(<RegisterPage />)} />
+      <Route
+        path={ROUTES.VERIFY_EMAIL}
+        element={guest(<VerifyEmailPage onVerified={handleAuthSuccess} />)}
+      />
+      <Route path={ROUTES.FORGOT} element={guest(<ForgotPasswordPage />)} />
+      <Route path={ROUTES.VERIFY_OTP} element={guest(<VerifyOtpPage />)} />
+      <Route path={ROUTES.RESET} element={guest(<ResetPasswordPage />)} />
+      <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+    </Routes>
+  );
 }

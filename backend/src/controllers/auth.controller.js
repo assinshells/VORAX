@@ -5,6 +5,8 @@ import {
   toForgotPasswordDto,
   toVerifyOtpDto,
   toResetPasswordDto,
+  toVerifyEmailDto,
+  toResendVerificationDto,
 } from "../dto/auth.dto.js";
 import {
   validateLoginRequest,
@@ -12,6 +14,8 @@ import {
   validateForgotPasswordRequest,
   validateVerifyOtpRequest,
   validateResetPasswordRequest,
+  validateVerifyEmailRequest,
+  validateResendVerificationRequest,
 } from "../validators/auth.validator.js";
 import { CookieProvider } from "../providers/cookie.provider.js";
 import { HTTP_STATUS, COOKIE_NAMES } from "../constants/auth.constants.js";
@@ -46,6 +50,30 @@ export const AuthController = {
       const dto = toRegisterRequestDto(req.body);
       const result = await AuthService.register(dto);
       res.status(HTTP_STATUS.CREATED).json({ success: true, ...result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  verifyEmail: async (req, res, next) => {
+    try {
+      validateVerifyEmailRequest(req.body);
+      const dto = toVerifyEmailDto(req.body);
+      const { accessToken, refreshToken, csrfToken } =
+        await AuthService.verifyEmail(dto);
+      CookieProvider.setAuthCookies(res, { refreshToken, csrfToken });
+      res.status(HTTP_STATUS.OK).json({ success: true, accessToken, csrfToken });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  resendVerification: async (req, res, next) => {
+    try {
+      validateResendVerificationRequest(req.body);
+      const dto = toResendVerificationDto(req.body);
+      const result = await AuthService.resendVerification(dto);
+      res.status(HTTP_STATUS.OK).json({ success: true, ...result });
     } catch (err) {
       next(err);
     }

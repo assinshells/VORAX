@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { useLoginStore } from "@features/auth/login/model/useLoginStore.js";
+import { PasswordInput } from "@shared/ui/PasswordInput.jsx";
 
 /**
  * LoginForm — тупой компонент.
- * onSuccess(login) — вызывается с логином после успешного входа.
+ * onSuccess(email) — вызывается после успешного входа.
+ * onUnverified(email) — почта ещё не активирована.
  */
-export function LoginForm({ onSuccess, onRegister, onForgot }) {
-  const [login, setLogin] = useState("");
+export function LoginForm({ onSuccess, onUnverified, onRegister, onForgot }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { loading, error, login: doLogin, clearError } = useLoginStore();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     clearError();
-    doLogin({ login, password }, () => onSuccess(login));
+    doLogin(
+      { email, password },
+      { onSuccess: () => onSuccess(email), onUnverified },
+    );
   };
 
   return (
@@ -22,25 +27,23 @@ export function LoginForm({ onSuccess, onRegister, onForgot }) {
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <input
-            id="loginInput"
-            type="text"
+            id="emailInput"
+            type="email"
             className="form-control"
-            placeholder="Введіть нікнейм"
-            value={login}
-            onChange={(e) => setLogin(e.target.value)}
+            placeholder="Введіть пошту"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
 
         <div className="mb-4">
-          <input
+          <PasswordInput
             id="passwordInput"
-            type="password"
-            className="form-control"
             placeholder="Введіть пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
         </div>
         <button

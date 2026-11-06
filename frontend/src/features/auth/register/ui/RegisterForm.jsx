@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { useRegisterStore } from "@features/auth/register/model/useRegisterStore.js";
-import { GENDER_OPTIONS } from "@shared/constants/auth.constants.js";
+import { PasswordInput } from "@shared/ui/PasswordInput.jsx";
 
+/**
+ * onSuccess(email) — аккаунт создан, код активации отправлен на email.
+ */
 export function RegisterForm({ onSuccess, onBack }) {
   const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [gender, setGender] = useState("");
+  const [password, setPassword] = useState("");
   const { loading, error, register, clearError } = useRegisterStore();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     clearError();
-    register({ login, password, email, gender }, onSuccess);
+    register({ login, email, password }, onSuccess);
   };
 
   return (
@@ -25,19 +27,9 @@ export function RegisterForm({ onSuccess, onBack }) {
             type="text"
             className="form-control"
             placeholder="Введіть нікнейм"
+            autoComplete="username"
             value={login}
             onChange={(e) => setLogin(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            id="passwordInput"
-            type="password"
-            className="form-control"
-            placeholder="Введіть пароль"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
@@ -46,30 +38,21 @@ export function RegisterForm({ onSuccess, onBack }) {
             id="emailInput"
             type="email"
             className="form-control"
-            placeholder="Введіть пошту (опціонально)"
+            placeholder="Введіть пошту"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </div>
-        <label className="mb-2 text-muted small">Як ви себе ідентифікуєте?</label>
-        <div className="d-flex align-items-center mb-3 px-0">
-          {GENDER_OPTIONS.map((option) => (
-            <div className="form-check me-3" key={option.value}>
-              <input
-                className="form-check-input"
-                type="radio"
-                name="gender"
-                id={`gender-${option.value}`}
-                value={option.value}
-                checked={gender === option.value}
-                onChange={(e) => setGender(e.target.value)}
-                required
-              />
-              <label className="form-check-label" htmlFor={`gender-${option.value}`}>
-                {option.label}
-              </label>
-            </div>
-          ))}
+        <div className="mb-4">
+          <PasswordInput
+            id="passwordInput"
+            placeholder="Введіть пароль"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
         <button
           type="submit"

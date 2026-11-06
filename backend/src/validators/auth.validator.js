@@ -1,16 +1,14 @@
 import { ValidationException } from "../exceptions/auth.exceptions.js";
-import { GENDER_OPTIONS } from "../constants/auth.constants.js";
 
 const isNonEmptyString = (val) =>
   typeof val === "string" && val.trim().length > 0;
-const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+const isValidEmail = (val) =>
+  typeof val === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 const isValidPassword = (val) => typeof val === "string" && val.length >= 6;
-const isValidGender = (val) =>
-  typeof val === "string" && GENDER_OPTIONS.includes(val);
 
 export const validateLoginRequest = (body) => {
   const errors = [];
-  if (!isNonEmptyString(body.login)) errors.push("login is required");
+  if (!isValidEmail(body.email)) errors.push("valid email is required");
   if (!isValidPassword(body.password))
     errors.push("password must be at least 6 characters");
   if (errors.length) throw new ValidationException("Validation failed", errors);
@@ -21,22 +19,20 @@ export const validateRegisterRequest = (body) => {
   if (!isNonEmptyString(body.login)) errors.push("login is required");
   if (!isValidPassword(body.password))
     errors.push("password must be at least 6 characters");
-  if (body.email && !isValidEmail(body.email)) errors.push("email is invalid");
-  if (!isValidGender(body.gender))
-    errors.push(`gender is required and must be one of: ${GENDER_OPTIONS.join(", ")}`);
+  if (!isValidEmail(body.email)) errors.push("valid email is required");
   if (errors.length) throw new ValidationException("Validation failed", errors);
 };
 
 export const validateForgotPasswordRequest = (body) => {
   const errors = [];
-  if (!body.email || !isValidEmail(body.email))
+  if (!isValidEmail(body.email))
     errors.push("valid email is required");
   if (errors.length) throw new ValidationException("Validation failed", errors);
 };
 
 export const validateVerifyOtpRequest = (body) => {
   const errors = [];
-  if (!body.email || !isValidEmail(body.email))
+  if (!isValidEmail(body.email))
     errors.push("valid email is required");
   if (!isNonEmptyString(body.otpCode)) errors.push("otpCode is required");
   if (errors.length) throw new ValidationException("Validation failed", errors);
@@ -54,3 +50,6 @@ export const validateResetPasswordRequest = (body) => {
     errors.push("Passwords do not match");
   if (errors.length) throw new ValidationException("Validation failed", errors);
 };
+
+export const validateVerifyEmailRequest = validateVerifyOtpRequest;
+export const validateResendVerificationRequest = validateForgotPasswordRequest;

@@ -1,9 +1,15 @@
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@widgets/layouts";
 import { ResetPasswordForm } from "@features/auth/reset-password/ui/ResetPasswordForm.jsx";
-import { AUTH_SCREENS } from "@shared/constants/auth.constants.js";
-import { APP_NAME } from "@shared/constants/auth.constants.js";
+import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
 
-export function ResetPasswordPage({ onNavigate, verifiedToken }) {
+export function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const verifiedToken = state?.verifiedToken;
+
+  if (!verifiedToken) return <Navigate to={ROUTES.FORGOT} replace />;
+
   return (
     <AuthLayout
       title={APP_NAME}
@@ -11,8 +17,8 @@ export function ResetPasswordPage({ onNavigate, verifiedToken }) {
     >
       <ResetPasswordForm
         verifiedToken={verifiedToken}
-        onSuccess={() => onNavigate(AUTH_SCREENS.LOGIN)}
-        onBack={() => onNavigate(AUTH_SCREENS.LOGIN)}
+        onSuccess={() => navigate(ROUTES.LOGIN, { replace: true })}
+        onBack={() => navigate(ROUTES.LOGIN)}
       />
     </AuthLayout>
   );

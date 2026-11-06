@@ -1,24 +1,23 @@
+import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "@widgets/layouts";
 import { LoginForm } from "@features/auth/login/ui/LoginForm.jsx";
-import { AUTH_SCREENS } from "@shared/constants/auth.constants.js";
-import { APP_NAME } from "@shared/constants/auth.constants.js";
+import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
 
-export function LoginPage({ onNavigate, onLoginSuccess }) {
+export function LoginPage({ onLoginSuccess }) {
+  const navigate = useNavigate();
+
   return (
     <AuthLayout
       title={APP_NAME}
-      subtitle="Тут усе пристойно. Майже. Це ж чат — а чати завжди трохи брудні."
+      subtitle="Раді бачити вас знову. Увійдіть, щоб продовжити."
     >
       <LoginForm
-        onSuccess={(login) => {
-          if (onLoginSuccess) {
-            onLoginSuccess(login);
-          } else {
-            onNavigate(AUTH_SCREENS.APP);
-          }
-        }}
-        onRegister={() => onNavigate(AUTH_SCREENS.REGISTER)}
-        onForgot={() => onNavigate(AUTH_SCREENS.FORGOT)}
+        onSuccess={onLoginSuccess}
+        onUnverified={(email) =>
+          navigate(`${ROUTES.VERIFY_EMAIL}?email=${encodeURIComponent(email)}`)
+        }
+        onRegister={() => navigate(ROUTES.REGISTER)}
+        onForgot={() => navigate(ROUTES.FORGOT)}
       />
     </AuthLayout>
   );

@@ -6,18 +6,18 @@ import { authConfig } from "../config/auth.config.js";
  * OtpRepository — работа с OTP и verified-токенами в Redis.
  */
 export const OtpRepository = {
-  async saveOtp(userId, otp) {
-    await redisClient.set(REDIS_KEYS.otp(userId), otp, {
+  async saveOtp(userId, purpose, otp) {
+    await redisClient.set(REDIS_KEYS.otp(userId, purpose), otp, {
       EX: authConfig.otp.ttlSeconds,
     });
   },
 
-  async getOtp(userId) {
-    return redisClient.get(REDIS_KEYS.otp(userId));
+  async getOtp(userId, purpose) {
+    return redisClient.get(REDIS_KEYS.otp(userId, purpose));
   },
 
-  async deleteOtp(userId) {
-    await redisClient.del(REDIS_KEYS.otp(userId));
+  async deleteOtp(userId, purpose) {
+    await redisClient.del(REDIS_KEYS.otp(userId, purpose));
   },
 
   /**
@@ -25,8 +25,8 @@ export const OtpRepository = {
    * TTL счётчика выставляется равным OTP TTL при первом инкременте,
    * чтобы счётчик не пережил сам код и не блокировал следующий запрос OTP.
    */
-  async incrementAttempts(userId) {
-    const key = REDIS_KEYS.otpAttempts(userId);
+  async incrementAttempts(userId, purpose) {
+    const key = REDIS_KEYS.otpAttempts(userId, purpose);
     const count = await redisClient.incr(key);
     if (count === 1) {
       await redisClient.expire(key, authConfig.otp.ttlSeconds);
@@ -34,8 +34,8 @@ export const OtpRepository = {
     return count;
   },
 
-  async deleteAttempts(userId) {
-    await redisClient.del(REDIS_KEYS.otpAttempts(userId));
+  async deleteAttempts(userId, purpose) {
+    await redisClient.del(REDIS_KEYS.otpAttempts(userId, purpose));
   },
 
   async saveVerifiedToken(token, userId) {

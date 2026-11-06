@@ -47,6 +47,16 @@ export const env = {
     // `expiresIn` accepts human strings ("7d") that Redis EX cannot.
     refreshTtlSeconds: Number(getEnv("JWT_REFRESH_TTL_SECONDS", 604800)),
   },
+  // SMTP: в dev это Mailpit (host=mailpit, port=1025, без авторизации).
+  // Если SMTP_HOST не задан — письма не отправляются, OTP пишется в лог.
+  smtp: {
+    host: getEnv("SMTP_HOST"),
+    port: Number(getEnv("SMTP_PORT", 1025)),
+    secure: getEnv("SMTP_SECURE", "false") === "true",
+    user: getEnv("SMTP_USER"),
+    pass: getEnv("SMTP_PASS"),
+    from: getEnv("SMTP_FROM", "VORAX <no-reply@vorax.local>"),
+  },
   otpTtlSeconds: Number(getEnv("OTP_TTL_SECONDS", 600)),
   otpLength: Number(getEnv("OTP_LENGTH", 6)),
   // Максимум неверных попыток ввода OTP до его принудительной инвалидации.

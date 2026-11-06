@@ -53,3 +53,21 @@ body {
   border-color: transparent !important;
   box-shadow: none;
 }
+
+/* Password visibility toggle: no border, no background, no focus ring */
+.password-toggle {
+  display: flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  line-height: 1;
+}
+.password-toggle:hover {
+  color: var(--bs-body-color);
+}
+.password-toggle:focus,
+.password-toggle:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

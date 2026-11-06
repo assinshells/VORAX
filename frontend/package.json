@@ -15,8 +15,9 @@
     "lucide-react": "^1.31.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.5",
     "simplebar-react": "^3.3.2",
-    "socket.io-client": "^4.8.3",
+    "socket.io-client": "^4.8.4",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

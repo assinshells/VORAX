@@ -6,7 +6,7 @@
 
 /**
  * @typedef {Object} LoginRequestDto
- * @property {string} login
+ * @property {string} email
  * @property {string} password
  */
 
@@ -14,8 +14,7 @@
  * @typedef {Object} RegisterRequestDto
  * @property {string} login
  * @property {string} password
- * @property {string|undefined} email
- * @property {"male"|"female"|"unknown"} gender
+ * @property {string} email
  */
 
 /**
@@ -53,26 +52,32 @@
  * @property {{ code: string, message: string, details?: string[] }} error
  */
 
+// Email регистронезависим: нормализуем один раз на входе, чтобы
+// "User@Mail.com" и "user@mail.com" не считались разными аккаунтами.
+const normalizeEmail = (email) => String(email ?? "").trim().toLowerCase();
+
 export const toLoginRequestDto = (body) => ({
-  login: body.login,
+  email: normalizeEmail(body.email),
   password: body.password,
 });
 
 export const toRegisterRequestDto = (body) => ({
   login: body.login,
   password: body.password,
-  email: body.email || undefined,
-  gender: body.gender,
+  email: normalizeEmail(body.email),
 });
 
 export const toForgotPasswordDto = (body) => ({
-  email: body.email,
+  email: normalizeEmail(body.email),
 });
 
 export const toVerifyOtpDto = (body) => ({
-  email: body.email,
-  otpCode: body.otpCode,
+  email: normalizeEmail(body.email),
+  otpCode: String(body.otpCode ?? "").trim(),
 });
+
+export const toVerifyEmailDto = toVerifyOtpDto;
+export const toResendVerificationDto = toForgotPasswordDto;
 
 export const toResetPasswordDto = (body) => ({
   verifiedToken: body.verifiedToken,

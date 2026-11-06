@@ -10,6 +10,16 @@ const router = Router();
 router.post("/login", RateLimitProvider.login, AuthController.login);
 router.post("/register", RateLimitProvider.register, AuthController.register);
 router.post(
+  "/verify-email",
+  RateLimitProvider.verifyEmail,
+  AuthController.verifyEmail,
+);
+router.post(
+  "/resend-verification",
+  RateLimitProvider.resendVerification,
+  AuthController.resendVerification,
+);
+router.post(
   "/forgot-password",
   RateLimitProvider.forgotPassword,
   AuthController.forgotPassword,

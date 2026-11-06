@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PasswordInput } from "@shared/ui/PasswordInput.jsx";
 import { useResetPasswordStore } from "@features/auth/reset-password/model/useResetPasswordStore.js";
 
 export function ResetPasswordForm({ verifiedToken, onSuccess, onBack }) {
@@ -17,10 +18,9 @@ export function ResetPasswordForm({ verifiedToken, onSuccess, onBack }) {
       {error && <p className="text-danger text-center mb-3">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <input
+          <PasswordInput
             id="passwordInput"
-            type="password"
-            className="form-control"
+            autoComplete="new-password"
             placeholder="Введіть новий пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -28,10 +28,9 @@ export function ResetPasswordForm({ verifiedToken, onSuccess, onBack }) {
           />
         </div>
         <div className="mb-3">
-          <input
+          <PasswordInput
             id="confirmPasswordInput"
-            type="password"
-            className="form-control"
+            autoComplete="new-password"
             placeholder="Повторити пароль"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
