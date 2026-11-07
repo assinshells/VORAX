@@ -6,7 +6,6 @@ import { PasswordInput } from "@shared/ui/PasswordInput.jsx";
  * onSuccess(email) — аккаунт создан, код активации отправлен на email.
  */
 export function RegisterForm({ onSuccess, onBack }) {
-  const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { loading, error, register, clearError } = useRegisterStore();
@@ -14,25 +13,13 @@ export function RegisterForm({ onSuccess, onBack }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     clearError();
-    register({ login, email, password }, onSuccess);
+    register({ email, password }, onSuccess);
   };
 
   return (
     <>
       {error && <p className="text-danger text-center mb-3">{error}</p>}
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <input
-            id="loginInput"
-            type="text"
-            className="form-control"
-            placeholder="Введіть нікнейм"
-            autoComplete="username"
-            value={login}
-            onChange={(e) => setLogin(e.target.value)}
-            required
-          />
-        </div>
         <div className="mb-3">
           <input
             id="emailInput"

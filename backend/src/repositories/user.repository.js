@@ -1,17 +1,12 @@
 import { pool } from "../config/database.js";
 
-export const UserRepository = {
-  async findByLogin(login) {
-    const { rows } = await pool.query(
-      "SELECT id, login, email, password_hash, email_verified FROM users WHERE login = $1",
-      [login],
-    );
-    return rows[0] ?? null;
-  },
+const PROFILE_COLUMNS =
+  "id, email, nickname, company_name, first_name, last_name, created_at, restarted_at";
 
+export const UserRepository = {
   async findByEmail(email) {
     const { rows } = await pool.query(
-      "SELECT id, login, email, password_hash, email_verified FROM users WHERE email = $1",
+      "SELECT id, email, password_hash, email_verified FROM users WHERE email = $1",
       [email],
     );
     return rows[0] ?? null;
@@ -19,25 +14,16 @@ export const UserRepository = {
 
   async findById(id) {
     const { rows } = await pool.query(
-      "SELECT id, login, email, password_hash, email_verified FROM users WHERE id = $1",
+      "SELECT id, email, password_hash, email_verified FROM users WHERE id = $1",
       [id],
     );
     return rows[0] ?? null;
   },
 
-  async create({ login, passwordHash, email }) {
+  async create({ passwordHash, email }) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-
-      const loginCheck = await client.query(
-        "SELECT id FROM users WHERE login = $1 FOR UPDATE",
-        [login],
-      );
-      if (loginCheck.rows.length > 0) {
-        await client.query("ROLLBACK");
-        return null;
-      }
 
       const emailCheck = await client.query(
         "SELECT id FROM users WHERE email = $1 FOR UPDATE",
@@ -49,8 +35,8 @@ export const UserRepository = {
       }
 
       const { rows } = await client.query(
-        "INSERT INTO users (login, password_hash, email) VALUES ($1, $2, $3) RETURNING id",
-        [login, passwordHash, email],
+        "INSERT INTO users (password_hash, email) VALUES ($1, $2) RETURNING id",
+        [passwordHash, email],
       );
 
       await client.query("COMMIT");
@@ -78,16 +64,43 @@ export const UserRepository = {
 
   async findProfileById(id) {
     const { rows } = await pool.query(
-      "SELECT id, login, email, avatar, gender FROM users WHERE id = $1",
+      `SELECT ${PROFILE_COLUMNS} FROM users WHERE id = $1`,
       [id],
     );
     return rows[0] ?? null;
   },
 
-  async updateAvatar(id, avatar, gender) {
+  /**
+   * Сохраняет стартовые данные. Возвращает:
+   *  - профиль — успех;
+   *  - "taken" — никнейм занят другим пользователем;
+   *  - null — пользователь не найден.
+   */
+  async saveSetup(id, { nickname, companyName, firstName, lastName }) {
+    try {
+      const { rows } = await pool.query(
+        `UPDATE users
+            SET nickname = $1, company_name = $2, first_name = $3, last_name = $4
+          WHERE id = $5
+      RETURNING ${PROFILE_COLUMNS}`,
+        [nickname, companyName, firstName, lastName, id],
+      );
+      return rows[0] ?? null;
+    } catch (err) {
+      if (err.code === "23505") return "taken"; // unique_violation (nickname)
+      throw err;
+    }
+  },
+
+  /** «Начать заново»: стираем все параметры, фиксируем дату рестарта. */
+  async restart(id) {
     const { rows } = await pool.query(
-      "UPDATE users SET avatar = $1, gender = $2 WHERE id = $3 RETURNING id, login, email, avatar, gender",
-      [avatar, gender, id],
+      `UPDATE users
+          SET nickname = NULL, company_name = NULL, first_name = NULL,
+              last_name = NULL, restarted_at = NOW()
+        WHERE id = $1
+    RETURNING ${PROFILE_COLUMNS}`,
+      [id],
     );
     return rows[0] ?? null;
   },

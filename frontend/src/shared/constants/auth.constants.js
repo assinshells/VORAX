@@ -1,6 +1,9 @@
 export const ROUTES = Object.freeze({
   HOME: "/",
-  AVATAR: "/avatar",
+  START: "/start",
+  DASHBOARD: "/dashboard",
+  PROFILE: "/profile",
+  SETTINGS: "/settings",
   LOGIN: "/login",
   REGISTER: "/register",
   VERIFY_EMAIL: "/verify-email",

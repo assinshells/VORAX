@@ -2,25 +2,24 @@ import { LogOut } from "lucide-react";
 import { useLogoutStore } from "@features/auth/logout/model/useLogoutStore.js";
 
 /**
- * LogoutButton — кнопка выхода из аккаунта.
+ * LogoutButton — иконка выхода (для шапки).
  * Вызывает logout() из useLogoutStore: шлёт запрос на /api/auth/logout,
  * затем в любом случае (даже если сессия уже истекла) чистит локальную
  * сессию и вызывает onLoggedOut().
  */
-export function LogoutButton({ onLoggedOut, className = "btn btn-outline-danger" }) {
+export function LogoutButton({ onLoggedOut, className = "header-icon-btn" }) {
   const { loading, logout } = useLogoutStore();
-
-  const handleClick = () => logout(onLoggedOut);
 
   return (
     <button
       type="button"
       className={className}
-      onClick={handleClick}
+      onClick={() => logout(onLoggedOut)}
       disabled={loading}
+      title="Выйти"
+      aria-label="Выйти"
     >
-      <LogOut size={18} strokeWidth={2} className="me-2" />
-      {loading ? "Виходимо..." : "Вийти"}
+      <LogOut size={20} strokeWidth={2} />
     </button>
   );
 }

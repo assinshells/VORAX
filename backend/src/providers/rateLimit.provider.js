@@ -28,4 +28,7 @@ export const RateLimitProvider = {
   verifyEmail: makeRateLimiter(authConfig.rateLimit.verifyOtp.max),
   resendVerification: makeRateLimiter(authConfig.rateLimit.forgotPassword.max),
   refresh: makeRateLimiter(authConfig.rateLimit.refresh.max),
+  // Запрос кода (письмо) и проверка кода для операций над аккаунтом.
+  accountCode: makeRateLimiter(authConfig.rateLimit.forgotPassword.max),
+  accountVerify: makeRateLimiter(authConfig.rateLimit.verifyOtp.max),
 };

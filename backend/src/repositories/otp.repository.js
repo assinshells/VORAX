@@ -38,6 +38,21 @@ export const OtpRepository = {
     await redisClient.del(REDIS_KEYS.otpAttempts(userId, purpose));
   },
 
+  // Новая почта, ожидающая подтверждения кодом (живёт ровно как код).
+  async savePendingEmail(userId, email) {
+    await redisClient.set(REDIS_KEYS.pendingEmail(userId), email, {
+      EX: authConfig.otp.ttlSeconds,
+    });
+  },
+
+  async getPendingEmail(userId) {
+    return redisClient.get(REDIS_KEYS.pendingEmail(userId));
+  },
+
+  async deletePendingEmail(userId) {
+    await redisClient.del(REDIS_KEYS.pendingEmail(userId));
+  },
+
   async saveVerifiedToken(token, userId) {
     await redisClient.set(REDIS_KEYS.otpVerified(token), String(userId), {
       EX: authConfig.otp.ttlSeconds,

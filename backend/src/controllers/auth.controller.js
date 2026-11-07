@@ -129,7 +129,10 @@ export const AuthController = {
       // Читаем напрямую из cookie (не через guard) — logout должен
       // оставаться идемпотентным и в отсутствие cookie (сессия уже истекла).
       const refreshToken = req.cookies?.[COOKIE_NAMES.refreshToken];
-      const result = await AuthService.logout({ refreshToken });
+      const result = await AuthService.logout({
+        refreshToken,
+        userId: req.userId,
+      });
       CookieProvider.clearAuthCookies(res);
       res.status(HTTP_STATUS.OK).json({ success: true, ...result });
     } catch (err) {

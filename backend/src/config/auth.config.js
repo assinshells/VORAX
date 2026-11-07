@@ -32,4 +32,5 @@ export const authConfig = {
     resetPassword: { max: env.rateLimit.resetMax },
     refresh: { max: env.rateLimit.refreshMax },
   },
+  accountDeletionDays: env.accountDeletionDays,
 };

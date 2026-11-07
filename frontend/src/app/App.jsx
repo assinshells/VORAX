@@ -4,7 +4,8 @@ import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
 import { Storage } from "@shared/lib/storage.js";
 import { refreshAccessToken } from "@shared/api/axios.js";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
-import { DEFAULT_AVATAR_ID } from "@entities/avatar/model/avatars.js";
+import { usePresence } from "@features/profile/presence/usePresence.js";
+import { AppLayout } from "@widgets/layouts";
 
 import { LoginPage } from "@pages/LoginPage.jsx";
 import { RegisterPage } from "@pages/RegisterPage.jsx";
@@ -12,8 +13,10 @@ import { VerifyEmailPage } from "@pages/VerifyEmailPage.jsx";
 import { ForgotPasswordPage } from "@pages/ForgotPasswordPage.jsx";
 import { VerifyOtpPage } from "@pages/VerifyOtpPage.jsx";
 import { ResetPasswordPage } from "@pages/ResetPasswordPage.jsx";
-import { HomePage } from "@pages/HomePage.jsx";
-import { AvatarPage } from "@pages/AvatarPage.jsx";
+import { StartPage } from "@pages/StartPage.jsx";
+import { DashboardPage } from "@pages/DashboardPage.jsx";
+import { ProfilePage } from "@pages/ProfilePage.jsx";
+import { SettingsPage } from "@pages/SettingsPage.jsx";
 
 import "@app/styles/index.css";
 
@@ -27,13 +30,20 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [authed, setAuthed] = useState(false);
   const navigate = useNavigate();
-  const { profile, error: profileError, fetchProfile, reset } =
-    useProfileStore();
+  const {
+    profile,
+    error: profileError,
+    fetchProfile,
+    reset,
+  } = useProfileStore();
 
-  // Как только пользователь авторизован — подгружаем профиль (аватар/пол).
+  // Как только пользователь авторизован — подгружаем профиль.
   useEffect(() => {
     if (authed) fetchProfile();
   }, [authed, fetchProfile]);
+
+  // Heartbeat для статуса онлайн/офлайн.
+  usePresence(authed);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,33 +104,45 @@ export default function App() {
     );
   }
 
-  // Первый вход: аватар не выбран (заглушка) — отправляем на выбор.
-  const needsAvatar = authed && profile?.avatar === DEFAULT_AVATAR_ID;
+  // Нет названия компании (первый вход или после «Начать заново») —
+  // показываем стартовую страницу.
+  const needsSetup = authed && !profile?.company_name;
+  const home = needsSetup ? ROUTES.START : ROUTES.DASHBOARD;
 
   // Гостевые страницы недоступны авторизованному пользователю и наоборот.
   const guest = (element) =>
-    authed ? <Navigate to={ROUTES.HOME} replace /> : element;
+    authed ? <Navigate to={home} replace /> : element;
+
+  // Защищённые страницы в общей шапке.
+  const protectedPage = (element) => {
+    if (!authed) return <Navigate to={ROUTES.LOGIN} replace />;
+    if (needsSetup) return <Navigate to={ROUTES.START} replace />;
+    return <AppLayout onLogout={handleLogout}>{element}</AppLayout>;
+  };
 
   return (
     <Routes>
       <Route
         path={ROUTES.HOME}
         element={
-          !authed ? (
-            <Navigate to={ROUTES.LOGIN} replace />
-          ) : needsAvatar ? (
-            <Navigate to={ROUTES.AVATAR} replace />
-          ) : (
-            <HomePage profile={profile} onLogout={handleLogout} />
-          )
+          <Navigate to={authed ? home : ROUTES.LOGIN} replace />
         }
       />
       <Route
-        path={ROUTES.AVATAR}
+        path={ROUTES.START}
         element={
-          authed ? <AvatarPage /> : <Navigate to={ROUTES.LOGIN} replace />
+          !authed ? (
+            <Navigate to={ROUTES.LOGIN} replace />
+          ) : needsSetup ? (
+            <StartPage />
+          ) : (
+            <Navigate to={ROUTES.DASHBOARD} replace />
+          )
         }
       />
+      <Route path={ROUTES.DASHBOARD} element={protectedPage(<DashboardPage />)} />
+      <Route path={ROUTES.PROFILE} element={protectedPage(<ProfilePage />)} />
+      <Route path={ROUTES.SETTINGS} element={protectedPage(<SettingsPage />)} />
       <Route
         path={ROUTES.LOGIN}
         element={guest(<LoginPage onLoginSuccess={handleAuthSuccess} />)}

@@ -5,10 +5,10 @@ export const useRegisterStore = create((set) => ({
   loading: false,
   error: null,
 
-  register: async ({ login, email, password }, onSuccess) => {
+  register: async ({ email, password }, onSuccess) => {
     set({ loading: true, error: null });
     try {
-      await registerRequest({ login, email, password });
+      await registerRequest({ email, password });
       onSuccess(email);
     } catch (err) {
       set({ error: err.message });

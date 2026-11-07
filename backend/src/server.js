@@ -5,6 +5,7 @@ import logger from "./config/logger.js";
 import { env, assertRequiredEnv } from "./config/env.js";
 import { connectDatabase, pool } from "./config/database.js";
 import { migrate } from "./config/migrate.js";
+import { AccountPurgeJob } from "./jobs/accountPurge.job.js";
 import { connectRedis, disconnectRedis } from "./config/redis.js";
 
 try {
@@ -29,6 +30,7 @@ const shutdown = async (signal) => {
   forceExitTimer.unref();
 
   try {
+    AccountPurgeJob.stop();
     await new Promise((resolve) => httpServer.close(resolve));
     logger.info("HTTP server closed");
 
@@ -66,6 +68,7 @@ const start = async () => {
     await migrate();
     await connectRedis();
     httpServer.listen(PORT, () => {
+      AccountPurgeJob.start();
       logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);
     });
   } catch (err) {

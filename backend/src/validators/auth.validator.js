@@ -16,7 +16,6 @@ export const validateLoginRequest = (body) => {
 
 export const validateRegisterRequest = (body) => {
   const errors = [];
-  if (!isNonEmptyString(body.login)) errors.push("login is required");
   if (!isValidPassword(body.password))
     errors.push("password must be at least 6 characters");
   if (!isValidEmail(body.email)) errors.push("valid email is required");

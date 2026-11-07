@@ -1,16 +1,18 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@widgets/layouts";
 import { LoginForm } from "@features/auth/login/ui/LoginForm.jsx";
 import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
 
 export function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
+  const notice = useLocation().state?.notice;
 
   return (
     <AuthLayout
       title={APP_NAME}
       subtitle="Раді бачити вас знову. Увійдіть, щоб продовжити."
     >
+      {notice && <p className="text-success text-center mb-3">{notice}</p>}
       <LoginForm
         onSuccess={onLoginSuccess}
         onUnverified={(email) =>

@@ -1,7 +1,7 @@
 export const AUTH_ERRORS = Object.freeze({
   INVALID_CREDENTIALS: "Invalid email or password",
   EMAIL_NOT_VERIFIED: "Email is not verified",
-  LOGIN_TAKEN: "Login already taken",
+  NICKNAME_TAKEN: "Nickname already taken",
   EMAIL_TAKEN: "Email already taken",
   USER_NOT_FOUND: "User not found",
   OTP_EXPIRED: "OTP expired or not found",
@@ -33,6 +33,7 @@ export const OTP_PURPOSES = Object.freeze({
 });
 
 export const REDIS_KEYS = Object.freeze({
+  presence: (uid) => `presence:${uid}`,
   refreshToken: (jti) => `refresh_token:${jti}`,
   otp: (uid, purpose) => `otp:${purpose}:${uid}`,
   otpVerified: (tok) => `otp_verified:${tok}`,

@@ -57,6 +57,10 @@ export const env = {
     pass: getEnv("SMTP_PASS"),
     from: getEnv("SMTP_FROM", "VORAX <no-reply@vorax.local>"),
   },
+  // Через сколько дней после подтверждения аккаунт удаляется окончательно
+  // и как часто фоновая задача проверяет просроченные аккаунты.
+  accountDeletionDays: Number(getEnv("ACCOUNT_DELETION_DAYS", 7)),
+  accountPurgeIntervalMs: Number(getEnv("ACCOUNT_PURGE_INTERVAL_MS", 60000)),
   otpTtlSeconds: Number(getEnv("OTP_TTL_SECONDS", 600)),
   otpLength: Number(getEnv("OTP_LENGTH", 6)),
   // Максимум неверных попыток ввода OTP до его принудительной инвалидации.

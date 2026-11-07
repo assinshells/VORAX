@@ -1,5 +1,6 @@
 import { TokenProvider } from "../providers/token.provider.js";
 import { TokenRepository } from "../repositories/token.repository.js";
+import { UserRepository } from "../repositories/user.repository.js";
 import { RefreshTokenInvalidException } from "../exceptions/auth.exceptions.js";
 
 export const TokenService = {
@@ -38,6 +39,11 @@ export const TokenService = {
     }
 
     await TokenRepository.deleteRefreshToken(payload.jti);
+
+    // Аккаунт мог быть удалён фоновой задачей — сессию не продлеваем.
+    const user = await UserRepository.findById(payload.sub);
+    if (!user) throw new RefreshTokenInvalidException();
+
     return this.issueTokenPair(payload.sub);
   },
 

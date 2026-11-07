@@ -6,6 +6,8 @@ import { csrfProtection } from "../middlewares/csrf.middleware.js";
 const router = Router();
 
 router.get("/me", authGuard, UserController.me);
-router.patch("/me/avatar", authGuard, csrfProtection, UserController.updateAvatar);
+router.put("/me/setup", authGuard, csrfProtection, UserController.saveSetup);
+router.post("/me/restart", authGuard, csrfProtection, UserController.restart);
+router.post("/me/heartbeat", authGuard, UserController.heartbeat);
 
 export default router;

@@ -74,67 +74,28 @@ body {
 
 
 /* =========================================================
-   AVATAR SELECT (split 70 / 30)
+   COUNTER INPUT (счётчик символов внутри поля)
    ========================================================= */
-.avatar-split {
-  display: grid;
-  grid-template-columns: 7fr 3fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-.avatar-split__aside {
-  position: sticky;
-  top: 1.5rem;
-}
-.avatar-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-.avatar-option {
+.counter-input {
   position: relative;
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem;
-  border: 3px solid transparent;
-  border-radius: 1.25rem;
-  background: transparent;
-  transition: border-color 0.15s, background-color 0.15s;
 }
-.avatar-option:hover {
-  background: rgba(var(--bs-primary-rgb), 0.08);
+.counter-input .form-control {
+  padding-right: 4.5rem;
 }
-.avatar-option:focus-visible {
-  outline: none;
-  border-color: rgba(var(--bs-primary-rgb), 0.5);
-}
-.avatar-option.is-active {
-  border-color: var(--bs-primary);
-  background: rgba(var(--bs-primary-rgb), 0.08);
-}
-.avatar-option svg {
-  max-width: 100%;
-  height: auto;
-}
-.avatar-option__check {
+.counter-input__counter {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  color: #fff;
-  background: var(--bs-primary);
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
 }
-@media (max-width: 767.98px) {
-  .avatar-split {
-    grid-template-columns: 1fr;
-  }
-  .avatar-split__aside {
-    position: static;
-    order: -1;
-  }
+
+/* =========================================================
+   APP HEADER
+   ========================================================= */
+.app-header {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
 }

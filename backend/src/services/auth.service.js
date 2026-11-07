@@ -1,6 +1,7 @@
 import { UserRepository } from "../repositories/user.repository.js";
 import { TokenService } from "./token.service.js";
 import { OtpService } from "./otp.service.js";
+import { PresenceRepository } from "../repositories/presence.repository.js";
 import { PasswordProvider } from "../providers/password.provider.js";
 import { EmailAdapter } from "../adapters/email.adapter.js";
 import logger from "../config/logger.js";
@@ -28,21 +29,17 @@ export const AuthService = {
     return TokenService.issueTokenPair(user.id);
   },
 
-  async register({ login, password, email }) {
-    const existingLogin = await UserRepository.findByLogin(login);
-    if (existingLogin) throw new ConflictException(AUTH_ERRORS.LOGIN_TAKEN);
-
+  async register({ password, email }) {
     const existingEmail = await UserRepository.findByEmail(email);
     if (existingEmail) throw new ConflictException(AUTH_ERRORS.EMAIL_TAKEN);
 
     const passwordHash = await PasswordProvider.hash(password);
     const created = await UserRepository.create({
-      login,
       passwordHash,
       email,
     });
 
-    if (!created) throw new ConflictException(AUTH_ERRORS.LOGIN_TAKEN);
+    if (!created) throw new ConflictException(AUTH_ERRORS.EMAIL_TAKEN);
 
     await this._sendActivationOtp(created.id, email);
 
@@ -104,8 +101,9 @@ export const AuthService = {
     return TokenService.rotateRefreshToken(refreshToken);
   },
 
-  async logout({ refreshToken }) {
+  async logout({ refreshToken, userId }) {
     await TokenService.revokeRefreshToken(refreshToken);
+    if (userId) await PresenceRepository.clear(userId);
     return { success: true };
   },
 
