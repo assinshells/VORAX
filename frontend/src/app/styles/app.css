@@ -98,4 +98,66 @@ body {
 .app-header {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.app-header__brand {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--bs-body-color);
+  text-decoration: none;
+}
+.app-header__link {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  text-decoration: none;
+}
+.app-header__link:hover {
+  color: var(--bs-body-color);
+  background: rgba(var(--bs-primary-rgb), 0.08);
+}
+.app-header__link.is-active {
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.1);
+}
+.header-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  transition: background-color 0.15s, color 0.15s;
+}
+.header-icon-btn:hover,
+.header-icon-btn.is-active {
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.08);
+}
+.header-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.4);
+}
+
+/* =========================================================
+   DELETION BANNER
+   ========================================================= */
+.deletion-banner {
+  color: #842029;
+  background: #f8d7da;
+  border-bottom: 1px solid #f1aeb5;
+  font-size: 0.95rem;
+}
+.deletion-banner__time {
+  font-variant-numeric: tabular-nums;
+}
+.deletion-banner__link {
+  font-weight: 600;
+  color: #842029;
+  text-decoration: underline;
 }

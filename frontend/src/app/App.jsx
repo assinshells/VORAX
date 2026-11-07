@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
 import { Storage } from "@shared/lib/storage.js";
+import { AuthSession } from "@shared/lib/authSession.js";
 import { refreshAccessToken } from "@shared/api/axios.js";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 import { usePresence } from "@features/profile/presence/usePresence.js";
-import { AppLayout } from "@widgets/layouts";
+import { Header } from "@widgets/header/ui/Header.jsx";
+import { DeletionBanner } from "@widgets/deletion-banner/ui/DeletionBanner.jsx";
 
 import { LoginPage } from "@pages/LoginPage.jsx";
 import { RegisterPage } from "@pages/RegisterPage.jsx";
@@ -17,6 +19,9 @@ import { StartPage } from "@pages/StartPage.jsx";
 import { DashboardPage } from "@pages/DashboardPage.jsx";
 import { ProfilePage } from "@pages/ProfilePage.jsx";
 import { SettingsPage } from "@pages/SettingsPage.jsx";
+import { ChangeEmailPage } from "@pages/ChangeEmailPage.jsx";
+import { ChangePasswordPage } from "@pages/ChangePasswordPage.jsx";
+import { DeleteAccountPage } from "@pages/DeleteAccountPage.jsx";
 
 import "@app/styles/index.css";
 
@@ -32,6 +37,7 @@ export default function App() {
   const navigate = useNavigate();
   const {
     profile,
+    clockOffset,
     error: profileError,
     fetchProfile,
     reset,
@@ -70,12 +76,28 @@ export default function App() {
     navigate(ROUTES.HOME, { replace: true });
   };
 
-  const handleLogout = () => {
+  // notice — необязательное сообщение для страницы входа.
+  const handleLogout = (notice) => {
     Storage.remove(USER_KEY);
     reset();
     setAuthed(false);
-    navigate(ROUTES.LOGIN, { replace: true });
+    navigate(ROUTES.LOGIN, {
+      replace: true,
+      state: typeof notice === "string" ? { notice } : undefined,
+    });
   };
+
+  // Срок удаления истёк: аккаунт стёрт фоновой задачей на сервере.
+  const handleExpired = useCallback(() => {
+    AuthSession.clear();
+    Storage.remove(USER_KEY);
+    reset();
+    setAuthed(false);
+    navigate(ROUTES.LOGIN, {
+      replace: true,
+      state: { notice: "Аккаунт удалён." },
+    });
+  }, [navigate, reset]);
 
   const loader = (
     <div
@@ -106,56 +128,89 @@ export default function App() {
 
   // Нет названия компании (первый вход или после «Начать заново») —
   // показываем стартовую страницу.
-  const needsSetup = authed && !profile?.company_name;
+  const needsSetup = authed && !profile?.companyName;
   const home = needsSetup ? ROUTES.START : ROUTES.DASHBOARD;
 
   // Гостевые страницы недоступны авторизованному пользователю и наоборот.
   const guest = (element) =>
     authed ? <Navigate to={home} replace /> : element;
 
-  // Защищённые страницы в общей шапке.
+  // Защищённые страницы: без входа — на логин, без стартовых данных — на старт.
   const protectedPage = (element) => {
     if (!authed) return <Navigate to={ROUTES.LOGIN} replace />;
     if (needsSetup) return <Navigate to={ROUTES.START} replace />;
-    return <AppLayout onLogout={handleLogout}>{element}</AppLayout>;
+    return element;
   };
 
   return (
-    <Routes>
-      <Route
-        path={ROUTES.HOME}
-        element={
-          <Navigate to={authed ? home : ROUTES.LOGIN} replace />
-        }
-      />
-      <Route
-        path={ROUTES.START}
-        element={
-          !authed ? (
-            <Navigate to={ROUTES.LOGIN} replace />
-          ) : needsSetup ? (
-            <StartPage />
-          ) : (
-            <Navigate to={ROUTES.DASHBOARD} replace />
-          )
-        }
-      />
-      <Route path={ROUTES.DASHBOARD} element={protectedPage(<DashboardPage />)} />
-      <Route path={ROUTES.PROFILE} element={protectedPage(<ProfilePage />)} />
-      <Route path={ROUTES.SETTINGS} element={protectedPage(<SettingsPage />)} />
-      <Route
-        path={ROUTES.LOGIN}
-        element={guest(<LoginPage onLoginSuccess={handleAuthSuccess} />)}
-      />
-      <Route path={ROUTES.REGISTER} element={guest(<RegisterPage />)} />
-      <Route
-        path={ROUTES.VERIFY_EMAIL}
-        element={guest(<VerifyEmailPage onVerified={handleAuthSuccess} />)}
-      />
-      <Route path={ROUTES.FORGOT} element={guest(<ForgotPasswordPage />)} />
-      <Route path={ROUTES.VERIFY_OTP} element={guest(<VerifyOtpPage />)} />
-      <Route path={ROUTES.RESET} element={guest(<ResetPasswordPage />)} />
-      <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
-    </Routes>
+    <>
+      <Header authed={authed} showNav={!needsSetup} onLogout={handleLogout} />
+      {authed && profile?.deleteAt && (
+        <DeletionBanner
+          deleteAt={profile.deleteAt}
+          clockOffset={clockOffset}
+          onExpired={handleExpired}
+        />
+      )}
+      <Routes>
+        <Route
+          path={ROUTES.HOME}
+          element={<Navigate to={authed ? home : ROUTES.LOGIN} replace />}
+        />
+        <Route
+          path={ROUTES.START}
+          element={
+            !authed ? (
+              <Navigate to={ROUTES.LOGIN} replace />
+            ) : needsSetup ? (
+              <StartPage />
+            ) : (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            )
+          }
+        />
+        <Route
+          path={ROUTES.DASHBOARD}
+          element={protectedPage(<DashboardPage />)}
+        />
+        <Route path={ROUTES.PROFILE} element={protectedPage(<ProfilePage />)} />
+        <Route
+          path={ROUTES.SETTINGS}
+          element={protectedPage(<SettingsPage profile={profile} />)}
+        />
+        <Route
+          path={ROUTES.CHANGE_EMAIL}
+          element={protectedPage(<ChangeEmailPage profile={profile} />)}
+        />
+        <Route
+          path={ROUTES.CHANGE_PASSWORD}
+          element={protectedPage(
+            <ChangePasswordPage
+              profile={profile}
+              onPasswordChanged={() =>
+                handleLogout("Пароль изменён. Войдите с новым паролем.")
+              }
+            />,
+          )}
+        />
+        <Route
+          path={ROUTES.DELETE_ACCOUNT}
+          element={protectedPage(<DeleteAccountPage profile={profile} />)}
+        />
+        <Route
+          path={ROUTES.LOGIN}
+          element={guest(<LoginPage onLoginSuccess={handleAuthSuccess} />)}
+        />
+        <Route path={ROUTES.REGISTER} element={guest(<RegisterPage />)} />
+        <Route
+          path={ROUTES.VERIFY_EMAIL}
+          element={guest(<VerifyEmailPage onVerified={handleAuthSuccess} />)}
+        />
+        <Route path={ROUTES.FORGOT} element={guest(<ForgotPasswordPage />)} />
+        <Route path={ROUTES.VERIFY_OTP} element={guest(<VerifyOtpPage />)} />
+        <Route path={ROUTES.RESET} element={guest(<ResetPasswordPage />)} />
+        <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+      </Routes>
+    </>
   );
 }

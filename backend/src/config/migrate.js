@@ -13,7 +13,8 @@ export const migrate = async () => {
       ADD COLUMN IF NOT EXISTS company_name VARCHAR(40),
       ADD COLUMN IF NOT EXISTS first_name VARCHAR(15),
       ADD COLUMN IF NOT EXISTS last_name VARCHAR(15),
-      ADD COLUMN IF NOT EXISTS restarted_at TIMESTAMPTZ
+      ADD COLUMN IF NOT EXISTS restarted_at TIMESTAMPTZ,
+      ADD COLUMN IF NOT EXISTS delete_at TIMESTAMPTZ
   `);
   await pool.query(
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_nickname ON users(nickname)",

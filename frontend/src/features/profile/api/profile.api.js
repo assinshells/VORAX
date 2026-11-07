@@ -5,25 +5,29 @@ import { apiClient } from "@shared/api/axios.js";
  * @property {number} id
  * @property {string} email
  * @property {string|null} nickname
- * @property {string|null} company_name
- * @property {string|null} first_name
- * @property {string|null} last_name
- * @property {string} created_at
- * @property {string|null} restarted_at
+ * @property {string|null} companyName
+ * @property {string|null} firstName
+ * @property {string|null} lastName
+ * @property {string} createdAt
+ * @property {string|null} restartedAt
+ * @property {string|null} deleteAt   время окончательного удаления, если аккаунт помечен
  * @property {boolean} online
  */
 
-/** @returns {Promise<Profile>} */
+// Все эндпоинты возвращают { user: Profile, serverTime: string } —
+// serverTime нужен для таймера удаления (часы клиента могут идти неверно).
+
+/** @returns {Promise<{ user: Profile, serverTime: string }>} */
 export const getProfileRequest = () =>
-  apiClient.get("/api/users/me").then((r) => r.data.user);
+  apiClient.get("/api/users/me").then((r) => r.data);
 
-/** @returns {Promise<Profile>} */
+/** @returns {Promise<{ user: Profile, serverTime: string }>} */
 export const saveSetupRequest = (dto) =>
-  apiClient.put("/api/users/me/setup", dto).then((r) => r.data.user);
+  apiClient.put("/api/users/me/setup", dto).then((r) => r.data);
 
-/** @returns {Promise<Profile>} */
+/** @returns {Promise<{ user: Profile, serverTime: string }>} */
 export const restartRequest = () =>
-  apiClient.post("/api/users/me/restart").then((r) => r.data.user);
+  apiClient.post("/api/users/me/restart").then((r) => r.data);
 
 export const heartbeatRequest = () =>
   apiClient.post("/api/users/me/heartbeat").then((r) => r.data);

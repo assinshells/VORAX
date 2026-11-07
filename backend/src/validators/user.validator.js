@@ -34,3 +34,19 @@ export const validateSetupRequest = (body) => {
     "only Latin letters");
   if (errors.length) throw new ValidationException("Validation failed", errors);
 };
+
+const isValidEmail = (val) =>
+  typeof val === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+
+export const validateOtpCodeRequest = (body) => {
+  const errors = [];
+  if (typeof body?.otpCode !== "string" || !body.otpCode.trim())
+    errors.push("otpCode is required");
+  if (errors.length) throw new ValidationException("Validation failed", errors);
+};
+
+export const validateEmailChangeRequest = (body) => {
+  const errors = [];
+  if (!isValidEmail(body?.email)) errors.push("valid email is required");
+  if (errors.length) throw new ValidationException("Validation failed", errors);
+};

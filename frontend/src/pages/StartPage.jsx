@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ROUTES, APP_NAME } from "@shared/constants/auth.constants.js";
+import { PageLayout } from "@widgets/layouts";
+import { ROUTES } from "@shared/constants/auth.constants.js";
 import { StartForm } from "@features/profile/setup/ui/StartForm.jsx";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 
@@ -13,14 +14,11 @@ export function StartPage() {
   };
 
   return (
-    <div className="container py-4" style={{ maxWidth: "36rem" }}>
-      <header className="mb-4">
-        <h4 className="mb-1 text-muted">{APP_NAME}</h4>
-        <span className="d-block text-muted">
-          Заполните данные, чтобы начать работу.
-        </span>
-      </header>
+    <PageLayout
+      title="Добро пожаловать"
+      subtitle="Заполните данные, чтобы начать работу."
+    >
       <StartForm saving={saving} error={error} onSave={handleSave} />
-    </div>
+    </PageLayout>
   );
 }

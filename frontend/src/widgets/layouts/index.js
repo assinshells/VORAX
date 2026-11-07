@@ -1,2 +1,2 @@
 export { AuthLayout } from "./ui/AuthLayout.jsx";
-export { AppLayout } from "./ui/AppLayout.jsx";
+export { PageLayout } from "./ui/PageLayout.jsx";

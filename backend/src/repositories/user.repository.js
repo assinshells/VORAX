@@ -1,7 +1,7 @@
 import { pool } from "../config/database.js";
 
 const PROFILE_COLUMNS =
-  "id, email, nickname, company_name, first_name, last_name, created_at, restarted_at";
+  "id, email, nickname, company_name, first_name, last_name, created_at, restarted_at, delete_at";
 
 export const UserRepository = {
   async findByEmail(email) {
@@ -103,5 +103,52 @@ export const UserRepository = {
       [id],
     );
     return rows[0] ?? null;
+  },
+
+  /**
+   * Помечает аккаунт на удаление через `days` дней. Повторный вызов срок
+   * не сдвигает (COALESCE): уже назначенное время остаётся прежним.
+   */
+  async markForDeletion(id, days) {
+    const { rows } = await pool.query(
+      `UPDATE users
+          SET delete_at = COALESCE(delete_at, NOW() + make_interval(days => $2))
+        WHERE id = $1
+    RETURNING ${PROFILE_COLUMNS}`,
+      [id, days],
+    );
+    return rows[0] ?? null;
+  },
+
+  async cancelDeletion(id) {
+    const { rows } = await pool.query(
+      `UPDATE users SET delete_at = NULL WHERE id = $1
+    RETURNING ${PROFILE_COLUMNS}`,
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
+  /** Окончательно удаляет аккаунты с истёкшим delete_at. Возвращает их число. */
+  async purgeExpired() {
+    const { rowCount } = await pool.query(
+      "DELETE FROM users WHERE delete_at IS NOT NULL AND delete_at <= NOW()",
+    );
+    return rowCount;
+  },
+
+  /** "taken" — почта занята; null — пользователь не найден. */
+  async updateEmail(id, email) {
+    try {
+      const { rows } = await pool.query(
+        `UPDATE users SET email = $1 WHERE id = $2
+      RETURNING ${PROFILE_COLUMNS}`,
+        [email, id],
+      );
+      return rows[0] ?? null;
+    } catch (err) {
+      if (err.code === "23505") return "taken";
+      throw err;
+    }
   },
 };

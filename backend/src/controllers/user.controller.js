@@ -1,48 +1,59 @@
 import { UserService } from "../services/user.service.js";
-import { validateSetupRequest } from "../validators/user.validator.js";
+import {
+  validateSetupRequest,
+  validateOtpCodeRequest,
+  validateEmailChangeRequest,
+} from "../validators/user.validator.js";
+import { toEmailChangeDto, toOtpCodeDto } from "../dto/user.dto.js";
 import { HTTP_STATUS } from "../constants/auth.constants.js";
 
+// Единая обёртка: вызвать сервис → { success, ...данные } → ошибки в next().
+const handler = (fn) => async (req, res, next) => {
+  try {
+    const data = await fn(req);
+    res.status(HTTP_STATUS.OK).json({ success: true, ...data });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const UserController = {
-  me: async (req, res, next) => {
-    try {
-      const user = await UserService.getProfile(req.userId);
-      res.status(HTTP_STATUS.OK).json({ success: true, user });
-    } catch (err) {
-      next(err);
-    }
-  },
+  me: handler((req) => UserService.getProfile(req.userId)),
 
-  saveSetup: async (req, res, next) => {
-    try {
-      validateSetupRequest(req.body);
-      const { nickname, companyName, firstName, lastName } = req.body;
-      const user = await UserService.saveSetup(req.userId, {
-        nickname,
-        companyName,
-        firstName,
-        lastName,
-      });
-      res.status(HTTP_STATUS.OK).json({ success: true, user });
-    } catch (err) {
-      next(err);
-    }
-  },
+  saveSetup: handler((req) => {
+    validateSetupRequest(req.body);
+    const { nickname, companyName, firstName, lastName } = req.body;
+    return UserService.saveSetup(req.userId, {
+      nickname,
+      companyName,
+      firstName,
+      lastName,
+    });
+  }),
 
-  restart: async (req, res, next) => {
-    try {
-      const user = await UserService.restart(req.userId);
-      res.status(HTTP_STATUS.OK).json({ success: true, user });
-    } catch (err) {
-      next(err);
-    }
-  },
+  restart: handler((req) => UserService.restart(req.userId)),
 
-  heartbeat: async (req, res, next) => {
-    try {
-      const result = await UserService.heartbeat(req.userId);
-      res.status(HTTP_STATUS.OK).json({ success: true, ...result });
-    } catch (err) {
-      next(err);
-    }
-  },
+  heartbeat: handler((req) => UserService.heartbeat(req.userId)),
+
+  requestDeletion: handler((req) => UserService.requestDeletion(req.userId)),
+
+  confirmDeletion: handler((req) => {
+    validateOtpCodeRequest(req.body);
+    const { otpCode } = toOtpCodeDto(req.body);
+    return UserService.confirmDeletion(req.userId, otpCode);
+  }),
+
+  cancelDeletion: handler((req) => UserService.cancelDeletion(req.userId)),
+
+  requestEmailChange: handler((req) => {
+    validateEmailChangeRequest(req.body);
+    const { email } = toEmailChangeDto(req.body);
+    return UserService.requestEmailChange(req.userId, email);
+  }),
+
+  confirmEmailChange: handler((req) => {
+    validateOtpCodeRequest(req.body);
+    const { otpCode } = toOtpCodeDto(req.body);
+    return UserService.confirmEmailChange(req.userId, otpCode);
+  }),
 };

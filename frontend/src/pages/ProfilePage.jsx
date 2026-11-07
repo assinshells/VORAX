@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { PageLayout } from "@widgets/layouts";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 import { formatDate } from "@shared/lib/date.js";
 
@@ -22,27 +23,28 @@ export function ProfilePage() {
   if (!profile) return null;
 
   const fullName =
-    [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—";
+    [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "—";
 
   return (
-    <div className="card p-4 rounded-4 shadow-sm" style={{ maxWidth: "36rem" }}>
-      <h4 className="mb-3">Профиль</h4>
-      <dl className="mb-0">
-        <Row label="Никнейм">{profile.nickname ?? "—"}</Row>
-        <Row label="Имя Фамилия">{fullName}</Row>
-        <Row label="Компания">{profile.company_name ?? "—"}</Row>
-        <Row label="Статус">
-          <span
-            className={`badge rounded-pill ${
-              profile.online ? "text-bg-success" : "text-bg-secondary"
-            }`}
-          >
-            {profile.online ? "Онлайн" : "Офлайн"}
-          </span>
-        </Row>
-        <Row label="Дата регистрации">{formatDate(profile.created_at)}</Row>
-        <Row label="Дата рестарта">{formatDate(profile.restarted_at)}</Row>
-      </dl>
-    </div>
+    <PageLayout title="Профиль">
+      <div className="card p-4 rounded-4 shadow-sm">
+        <dl className="mb-0">
+          <Row label="Никнейм">{profile.nickname ?? "—"}</Row>
+          <Row label="Имя Фамилия">{fullName}</Row>
+          <Row label="Компания">{profile.companyName ?? "—"}</Row>
+          <Row label="Статус">
+            <span
+              className={`badge rounded-pill ${
+                profile.online ? "text-bg-success" : "text-bg-secondary"
+              }`}
+            >
+              {profile.online ? "Онлайн" : "Офлайн"}
+            </span>
+          </Row>
+          <Row label="Дата регистрации">{formatDate(profile.createdAt)}</Row>
+          <Row label="Дата рестарта">{formatDate(profile.restartedAt)}</Row>
+        </dl>
+      </div>
+    </PageLayout>
   );
 }

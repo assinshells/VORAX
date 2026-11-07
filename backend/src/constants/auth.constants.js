@@ -30,10 +30,13 @@ export const COOKIE_NAMES = Object.freeze({
 export const OTP_PURPOSES = Object.freeze({
   ACTIVATION: "activation",
   RESET: "reset",
+  DELETE: "delete",
+  EMAIL_CHANGE: "email_change",
 });
 
 export const REDIS_KEYS = Object.freeze({
   presence: (uid) => `presence:${uid}`,
+  pendingEmail: (uid) => `pending_email:${uid}`,
   refreshToken: (jti) => `refresh_token:${jti}`,
   otp: (uid, purpose) => `otp:${purpose}:${uid}`,
   otpVerified: (tok) => `otp_verified:${tok}`,

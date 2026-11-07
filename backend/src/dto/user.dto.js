@@ -1,19 +1,29 @@
 /**
  * @typedef {Object} ProfileDto
  * @property {number} id
- * @property {string} login
  * @property {string} email
- * @property {string} avatar     id аватара или "default"
- * @property {string} gender     male | female | unknown
- * @property {string|null} deleteAt  ISO-время окончательного удаления, если аккаунт помечен
+ * @property {string|null} nickname
+ * @property {string|null} companyName
+ * @property {string|null} firstName
+ * @property {string|null} lastName
+ * @property {string} createdAt     дата регистрации (ISO)
+ * @property {string|null} restartedAt  дата последнего «Начать заново» (ISO)
+ * @property {string|null} deleteAt ISO-время окончательного удаления, если аккаунт помечен
+ * @property {boolean} online
  */
-export const toProfileDto = (row) => ({
+const iso = (v) => (v ? new Date(v).toISOString() : null);
+
+export const toProfileDto = (row, online = false) => ({
   id: row.id,
-  login: row.login,
   email: row.email,
-  avatar: row.avatar,
-  gender: row.gender,
-  deleteAt: row.delete_at ? new Date(row.delete_at).toISOString() : null,
+  nickname: row.nickname ?? null,
+  companyName: row.company_name ?? null,
+  firstName: row.first_name ?? null,
+  lastName: row.last_name ?? null,
+  createdAt: iso(row.created_at),
+  restartedAt: iso(row.restarted_at),
+  deleteAt: iso(row.delete_at),
+  online,
 });
 
 export const toEmailChangeDto = (body) => ({

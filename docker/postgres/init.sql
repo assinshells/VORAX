@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(15),
     last_name VARCHAR(15),
     restarted_at TIMESTAMPTZ,
+    delete_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
